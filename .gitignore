@@ -1,0 +1,39 @@
+.vs/
+Debug/
+Release/
+x64/
+x86/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.opendb
+
+# Скомпилированные файлы
+*.obj
+*.exe
+*.dll
+*.lib
+*.pdb
+
+# Файлы отладки
+*.ilk
+*.idb
+*.ipdb
+*.iobj
+
+# Папка с отладочной информацией
+ipch/
+*.tlog
+
+# Файлы резервных копий
+*.bak
+*.tmp
+*~
+
+# Папка с результатами сборки
+out/
+build/
+
+# Файлы VS Code
+.vscode/
