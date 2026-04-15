@@ -29,10 +29,9 @@ Solution Student::solve(const Equation& eq) const
     if (type == StudentType::GOOD) return eq.get_correct_solution();
     if (type == StudentType::BAD) return { 1, 0, 0 };
 
-    static std::random_device dev;
-    static std::mt19937 rng(dev());
+    static std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> dist(0, 1);
 
-    if (std::rand() % 2 == 0) return eq.get_correct_solution();
+    if (dist(rng) == 0) return eq.get_correct_solution();
     return { 0, 999, 999 };
 }
