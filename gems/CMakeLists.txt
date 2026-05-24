@@ -30,9 +30,9 @@ set(SOURCES
 
 add_executable(GEMS ${SOURCES})
 
-target_link_libraries(GEMS PRIVATE 
-    sfml-graphics 
-    sfml-window 
+target_link_libraries(GEMS PRIVATE
+    sfml-graphics
+    sfml-window
     sfml-system
 )
 

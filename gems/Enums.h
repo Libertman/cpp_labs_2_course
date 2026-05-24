@@ -11,6 +11,6 @@ enum class GemColor {
 
 enum class BonusType {
     None = 0,
-    Recolor, 
+    Recolor,
     Bomb
 };

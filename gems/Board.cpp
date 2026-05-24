@@ -103,15 +103,15 @@ void Board::executeRecolor(Point target, GemColor color, const std::vector<Point
 
     std::shuffle(nonNeighbors.begin(), nonNeighbors.end(), m_rng);
     int toRecolor = std::min(2, static_cast<int>(nonNeighbors.size()));
-        for (int i = 0; i < toRecolor; ++i) {
-            m_grid[nonNeighbors[i].y][nonNeighbors[i].x].setColor(color);
-        }
+    for (int i = 0; i < toRecolor; ++i) {
+        m_grid[nonNeighbors[i].y][nonNeighbors[i].x].setColor(color);
+    }
 }
 
 void Board::executeBomb(Point target, std::vector<std::vector<bool>>& markedForDeletion) {
     markedForDeletion[target.y][target.x] = true;
 
-        std::vector<Point> allPoints;
+    std::vector<Point> allPoints;
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
             if (!(x == target.x && y == target.y)) {
@@ -122,9 +122,9 @@ void Board::executeBomb(Point target, std::vector<std::vector<bool>>& markedForD
 
     std::shuffle(allPoints.begin(), allPoints.end(), m_rng);
     int extraDestroy = std::min(4, static_cast<int>(allPoints.size()));
-        for (int i = 0; i < extraDestroy; ++i) {
-            markedForDeletion[allPoints[i].y][allPoints[i].x] = true;
-        }
+    for (int i = 0; i < extraDestroy; ++i) {
+        markedForDeletion[allPoints[i].y][allPoints[i].x] = true;
+    }
 }
 
 void Board::triggerBonusEffect(Point origin, GemColor originColor) {
@@ -132,7 +132,7 @@ void Board::triggerBonusEffect(Point origin, GemColor originColor) {
     if (chance(m_rng) > 10) return;
 
     auto neighborhood = getNeighborhood(origin, 3);
-        if (neighborhood.empty()) return;
+    if (neighborhood.empty()) return;
 
     std::uniform_int_distribution<int> indexDist(0, neighborhood.size() - 1);
     Point target = neighborhood[indexDist(m_rng)];
@@ -164,7 +164,7 @@ bool Board::updateState() {
             if (!visited[y][x] && !m_grid[y][x].isEmpty()) {
                 auto component = findConnectedComponent({ x, y }, visited);
                 if (component.size() >= 3) {
-                        hasChanges = true;
+                    hasChanges = true;
                     for (const auto& p : component) {
                         markedForDeletion[p.y][p.x] = true;
                     }
