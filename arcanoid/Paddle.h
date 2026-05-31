@@ -14,7 +14,7 @@ public:
     Paddle();
     void update(float deltaTime);
     void draw(sf::RenderWindow& window);
-    void shrink(); // Пункт 3
+    void shrink();
     sf::FloatRect getBounds() const;
     void resetPosition();
 };
