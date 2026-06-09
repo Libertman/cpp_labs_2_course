@@ -3,18 +3,25 @@
 #include <algorithm>
 
 Board::Board(int width, int height) : m_width(width), m_height(height), m_rng(std::random_device{}()) {
-    m_grid.resize(m_height, std::vector<Gem>(m_width));
+    m_grid.resize(m_height);
+    for (int y = 0; y < m_height; ++y) {
+        m_grid[y].resize(m_width);
+    }
     initBoard();
 }
 
 void Board::initBoard() {
+    int attempts = 0;
+    constexpr int MAX_ATTEMPTS = 100;
+
     do {
         for (int y = 0; y < m_height; ++y) {
             for (int x = 0; x < m_width; ++x) {
-                m_grid[y][x] = Gem(getRandomColor());
+                m_grid[y][x] = GemFactory::createGem(getRandomColor());
             }
         }
-    } while (updateState());
+        attempts++;
+    } while (updateState() && attempts < MAX_ATTEMPTS);
 }
 
 GemColor Board::getRandomColor() {
@@ -35,7 +42,7 @@ bool Board::trySwap(Point p1, Point p2) {
     bool hasMatches = false;
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
-            if (!visited[y][x] && !m_grid[y][x].isEmpty()) {
+            if (!visited[y][x] && !m_grid[y][x]->isEmpty()) {
                 auto comp = findConnectedComponent({ x, y }, visited);
                 if (comp.size() >= 3) hasMatches = true;
             }
@@ -52,7 +59,7 @@ bool Board::trySwap(Point p1, Point p2) {
 std::vector<Point> Board::findConnectedComponent(Point start, std::vector<std::vector<bool>>& visited) {
     std::vector<Point> component;
     std::queue<Point> q;
-    GemColor targetColor = m_grid[start.y][start.x].getColor();
+    GemColor targetColor = m_grid[start.y][start.x]->getColor();
 
     q.push(start);
     visited[start.y][start.x] = true;
@@ -70,7 +77,7 @@ std::vector<Point> Board::findConnectedComponent(Point start, std::vector<std::v
             int ny = curr.y + dy[i];
 
             if (nx >= 0 && nx < m_width && ny >= 0 && ny < m_height) {
-                if (!visited[ny][nx] && m_grid[ny][nx].getColor() == targetColor) {
+                if (!visited[ny][nx] && m_grid[ny][nx]->getColor() == targetColor) {
                     visited[ny][nx] = true;
                     q.push({ nx, ny });
                 }
@@ -91,12 +98,13 @@ std::vector<Point> Board::getNeighborhood(Point center, int radius) const {
 }
 
 void Board::executeRecolor(Point target, GemColor color, const std::vector<Point>& neighborhood) {
-    m_grid[target.y][target.x].setColor(color);
+    m_grid[target.y][target.x]->setColor(color);
 
     std::vector<Point> nonNeighbors;
     for (const auto& p : neighborhood) {
-        if (p == target) continue;
-        if (std::abs(p.x - target.x) > 1 || std::abs(p.y - target.y) > 1) {
+        int manhattanDistance = std::abs(p.x - target.x) + std::abs(p.y - target.y);
+
+        if (manhattanDistance > 1) {
             nonNeighbors.push_back(p);
         }
     }
@@ -104,7 +112,7 @@ void Board::executeRecolor(Point target, GemColor color, const std::vector<Point
     std::shuffle(nonNeighbors.begin(), nonNeighbors.end(), m_rng);
     int toRecolor = std::min(2, static_cast<int>(nonNeighbors.size()));
     for (int i = 0; i < toRecolor; ++i) {
-        m_grid[nonNeighbors[i].y][nonNeighbors[i].x].setColor(color);
+        m_grid[nonNeighbors[i].y][nonNeighbors[i].x]->setColor(color);
     }
 }
 
@@ -140,17 +148,22 @@ void Board::triggerBonusEffect(Point origin, GemColor originColor) {
     std::uniform_int_distribution<int> bonusDist(0, 1);
     BonusType bonus = static_cast<BonusType>(bonusDist(m_rng) + 1);
 
+    GemColor targetColor = m_grid[target.y][target.x]->getColor();
+    m_grid[target.y][target.x] = GemFactory::createGem(targetColor, bonus);
+
     if (bonus == BonusType::Recolor) {
         executeRecolor(target, originColor, neighborhood);
     }
     else if (bonus == BonusType::Bomb) {
         std::vector<std::vector<bool>> bombDeletion(m_height, std::vector<bool>(m_width, false));
         executeBomb(target, bombDeletion);
-            for (int y = 0; y < m_height; ++y) {
-                for (int x = 0; x < m_width; ++x) {
-                    if (bombDeletion[y][x]) m_grid[y][x].clear();
+        for (int y = 0; y < m_height; ++y) {
+            for (int x = 0; x < m_width; ++x) {
+                if (bombDeletion[y][x]) {
+                    m_grid[y][x]->setColor(GemColor::Empty);
                 }
             }
+        }
     }
 }
 
@@ -161,7 +174,7 @@ bool Board::updateState() {
 
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
-            if (!visited[y][x] && !m_grid[y][x].isEmpty()) {
+            if (!visited[y][x] && !m_grid[y][x]->isEmpty()) {
                 auto component = findConnectedComponent({ x, y }, visited);
                 if (component.size() >= 3) {
                     hasChanges = true;
@@ -178,15 +191,15 @@ bool Board::updateState() {
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
             if (markedForDeletion[y][x]) {
-                triggerBonusEffect({ x, y }, m_grid[y][x].getColor());
+                triggerBonusEffect({ x, y }, m_grid[y][x]->getColor());
             }
         }
     }
 
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
-            if (markedForDeletion[y][x]) {
-                m_grid[y][x].clear();
+            if (markedForDeletion[y][x] || m_grid[y][x]->getColor() == GemColor::Empty) {
+                m_grid[y][x] = GemFactory::createGem(GemColor::Empty);
             }
         }
     }
@@ -194,17 +207,16 @@ bool Board::updateState() {
     for (int x = 0; x < m_width; ++x) {
         int emptyRow = m_height - 1;
         for (int y = m_height - 1; y >= 0; --y) {
-            if (!m_grid[y][x].isEmpty()) {
+            if (!m_grid[y][x]->isEmpty()) {
                 if (y != emptyRow) {
-                    m_grid[emptyRow][x] = m_grid[y][x];
-                        m_grid[y][x].clear();
+                    m_grid[emptyRow][x] = std::move(m_grid[y][x]);
+                    m_grid[y][x] = GemFactory::createGem(GemColor::Empty);
                 }
                 emptyRow--;
             }
         }
-
         for (int y = emptyRow; y >= 0; --y) {
-            m_grid[y][x] = Gem(getRandomColor());
+            m_grid[y][x] = GemFactory::createGem(getRandomColor());
         }
     }
 

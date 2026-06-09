@@ -1,10 +1,15 @@
 #include "Gem.h"
+#include <memory>
 
-Gem::Gem() : m_color(GemColor::Empty), m_bonus(BonusType::None) {}
+BaseGem::BaseGem(GemColor color) : m_color(color) {}
 
-Gem::Gem(GemColor color) : m_color(color), m_bonus(BonusType::None) {}
-
-void Gem::clear() {
-    m_color = GemColor::Empty;
-    m_bonus = BonusType::None;
+std::unique_ptr<Gem> GemFactory::createGem(GemColor color, BonusType bonus) {
+    switch (bonus) {
+    case BonusType::Recolor:
+        return std::make_unique<RecolorGem>(color);
+    case BonusType::Bomb:
+        return std::make_unique<BombGem>(color);
+    default:
+        return std::make_unique<NormalGem>(color);
+    }
 }

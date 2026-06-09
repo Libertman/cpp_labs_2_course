@@ -19,12 +19,12 @@ public:
 
     int getWidth() const { return m_width; }
     int getHeight() const { return m_height; }
-    const Gem& getGem(int x, int y) const { return m_grid[y][x]; }
+    const Gem& getGem(int x, int y) const { return *m_grid[y][x]; }
 
 private:
     int m_width;
     int m_height;
-    std::vector<std::vector<Gem>> m_grid;
+    std::vector<std::vector<std::unique_ptr<Gem>>> m_grid;
     std::mt19937 m_rng;
 
     GemColor getRandomColor();

@@ -54,6 +54,15 @@ void Game::render() {
             shape.setPosition(x * CELL_SIZE + 2, y * CELL_SIZE + 2);
             shape.setFillColor(convertColor(gem.getColor()));
 
+            if (gem.getBonusType() == BonusType::Bomb) {
+                shape.setOutlineThickness(2);
+                shape.setOutlineColor(sf::Color::Red);
+            }
+            else if (gem.getBonusType() == BonusType::Recolor) {
+                shape.setOutlineThickness(2);
+                shape.setOutlineColor(sf::Color::Cyan);
+            }
+
             if (m_hasSelection && m_selectedPoint.x == x && m_selectedPoint.y == y) {
                 shape.setOutlineThickness(3);
                 shape.setOutlineColor(sf::Color::White);

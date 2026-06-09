@@ -13,7 +13,7 @@
 
 ## Используемая библиотека
 
-SFML 2.5.1
+SFML 2.6.1
 
 https://github.com/SFML/SFML.git
 
