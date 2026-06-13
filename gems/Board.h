@@ -21,6 +21,11 @@ public:
     int getHeight() const { return m_height; }
     const Gem& getGem(int x, int y) const { return *m_grid[y][x]; }
 
+    std::mt19937& getRng() { return m_rng; }
+    void clearCell(Point p) { m_grid[p.y][p.x] = GemFactory::createGem(GemColor::Empty); }
+    void setCellColor(Point p, GemColor color) { m_grid[p.y][p.x]->setColor(color); }
+    std::vector<Point> getNeighborhood(Point center, int radius) const;
+
 private:
     int m_width;
     int m_height;
@@ -32,8 +37,4 @@ private:
 
     std::vector<Point> findConnectedComponent(Point start, std::vector<std::vector<bool>>& visited);
     void triggerBonusEffect(Point origin, GemColor originColor);
-
-    std::vector<Point> getNeighborhood(Point center, int radius) const;
-    void executeRecolor(Point target, GemColor color, const std::vector<Point>& neighborhood);
-    void executeBomb(Point target, std::vector<std::vector<bool>>& markedForDeletion);
 };

@@ -97,44 +97,6 @@ std::vector<Point> Board::getNeighborhood(Point center, int radius) const {
     return neighbors;
 }
 
-void Board::executeRecolor(Point target, GemColor color, const std::vector<Point>& neighborhood) {
-    m_grid[target.y][target.x]->setColor(color);
-
-    std::vector<Point> nonNeighbors;
-    for (const auto& p : neighborhood) {
-        int manhattanDistance = std::abs(p.x - target.x) + std::abs(p.y - target.y);
-
-        if (manhattanDistance > 1) {
-            nonNeighbors.push_back(p);
-        }
-    }
-
-    std::shuffle(nonNeighbors.begin(), nonNeighbors.end(), m_rng);
-    int toRecolor = std::min(2, static_cast<int>(nonNeighbors.size()));
-    for (int i = 0; i < toRecolor; ++i) {
-        m_grid[nonNeighbors[i].y][nonNeighbors[i].x]->setColor(color);
-    }
-}
-
-void Board::executeBomb(Point target, std::vector<std::vector<bool>>& markedForDeletion) {
-    markedForDeletion[target.y][target.x] = true;
-
-    std::vector<Point> allPoints;
-    for (int y = 0; y < m_height; ++y) {
-        for (int x = 0; x < m_width; ++x) {
-            if (!(x == target.x && y == target.y)) {
-                allPoints.push_back({ x, y });
-            }
-        }
-    }
-
-    std::shuffle(allPoints.begin(), allPoints.end(), m_rng);
-    int extraDestroy = std::min(4, static_cast<int>(allPoints.size()));
-    for (int i = 0; i < extraDestroy; ++i) {
-        markedForDeletion[allPoints[i].y][allPoints[i].x] = true;
-    }
-}
-
 void Board::triggerBonusEffect(Point origin, GemColor originColor) {
     std::uniform_int_distribution<int> chance(1, 100);
     if (chance(m_rng) > 10) return;
@@ -149,21 +111,8 @@ void Board::triggerBonusEffect(Point origin, GemColor originColor) {
     BonusType bonus = static_cast<BonusType>(bonusDist(m_rng) + 1);
 
     GemColor targetColor = m_grid[target.y][target.x]->getColor();
-    m_grid[target.y][target.x] = GemFactory::createGem(targetColor, bonus);
-
-    if (bonus == BonusType::Recolor) {
-        executeRecolor(target, originColor, neighborhood);
-    }
-    else if (bonus == BonusType::Bomb) {
-        std::vector<std::vector<bool>> bombDeletion(m_height, std::vector<bool>(m_width, false));
-        executeBomb(target, bombDeletion);
-        for (int y = 0; y < m_height; ++y) {
-            for (int x = 0; x < m_width; ++x) {
-                if (bombDeletion[y][x]) {
-                    m_grid[y][x]->setColor(GemColor::Empty);
-                }
-            }
-        }
+    if (targetColor != GemColor::Empty) {
+        m_grid[target.y][target.x] = GemFactory::createGem(targetColor, bonus);
     }
 }
 
@@ -191,7 +140,11 @@ bool Board::updateState() {
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
             if (markedForDeletion[y][x]) {
-                triggerBonusEffect({ x, y }, m_grid[y][x]->getColor());
+                GemColor originalColor = m_grid[y][x]->getColor();
+
+                m_grid[y][x]->activate(*this, { x, y });
+
+                triggerBonusEffect({ x, y }, originalColor);
             }
         }
     }
