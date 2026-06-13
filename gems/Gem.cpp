@@ -12,9 +12,7 @@ void RecolorGem::activate(Board& board, Point myPos) {
 
     std::vector<Point> nonNeighbors;
     for (const auto& p : neighborhood) {
-        // Вычисляем Манхэттенское расстояние
         int manhattanDistance = std::abs(p.x - myPos.x) + std::abs(p.y - myPos.y);
-        // Исключаем саму цель и её непосредственных соседей (dist <= 1)
         if (manhattanDistance > 1) {
             nonNeighbors.push_back(p);
         }
