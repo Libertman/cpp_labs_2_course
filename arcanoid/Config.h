@@ -17,15 +17,4 @@ inline constexpr int BLOCK_COLS = 10;
 inline constexpr float BLOCK_HEIGHT = 25.0f;
 inline constexpr float BLOCK_PADDING = 5.0f;
 
-enum class BlockType {
-    Normal,
-    Indestructible,
-    SpeedUp,
-    BonusHolder
-};
-
-enum class BonusType {
-    SafetyFloor
-};
-
 #endif

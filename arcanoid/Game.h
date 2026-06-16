@@ -6,21 +6,23 @@
 #include <vector>
 #include "Paddle.h"
 #include "Ball.h"
-#include "Block.h"
-#include "Bonus.h"
+#include "GameElement.h"
 
 class Game {
 private:
     sf::RenderWindow window;
     Paddle paddle;
-    Ball ball;
-    std::vector<Block> blocks;
-    std::vector<Bonus> bonuses;
+
+    std::vector<std::unique_ptr<Ball>> balls;
+    std::vector<std::unique_ptr<GameElement>> elements;
 
     int score;
     int lives;
+
     bool safetyFloorActive;
     sf::RectangleShape safetyFloorVisual;
+
+    bool stickyModifierActive;
 
     void initBlocks();
     void processEvents();
@@ -32,6 +34,12 @@ private:
 public:
     Game();
     void run();
+    void addScore(int points) { score += points; }
+    void spawnRandomBonus(float x, float y);
+    void modifyBallsSpeed(float factor);
+    void activateStickyModifier() { stickyModifierActive = true; }
+    void activateSafetyFloor() { safetyFloorActive = true; }
+    void spawnAdditionalBall();
 };
 
 #endif

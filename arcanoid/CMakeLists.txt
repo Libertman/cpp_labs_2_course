@@ -23,8 +23,6 @@ FetchContent_MakeAvailable(SFML)
 
 set(SOURCES
     Ball.cpp
-    Block.cpp
-    Bonus.cpp
     Game.cpp
     Paddle.cpp
     main.cpp

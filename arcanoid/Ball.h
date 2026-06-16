@@ -8,19 +8,26 @@ class Ball {
 private:
     sf::CircleShape shape;
     sf::Vector2f velocity;
+    bool stuck;
+    float stuckOffsetX;
 
 public:
-    Ball();
-    void update(float deltaTime);
+    Ball(float x, float y, bool startStuck = false);
+    void update(float deltaTime, const sf::FloatRect& paddleBounds);
     void draw(sf::RenderWindow& window);
-
+    
     void bounceX();
     void bounceY();
-    void speedUp(float factor);
-
+    void multiplySpeed(float factor);
+    void setVelocity(sf::Vector2f vel);
+    sf::Vector2f getVelocity() const { return velocity; }
+    
+    bool isStuck() const { return stuck; }
+    void stick(float paddleLeft);
+    void launch();
+    
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
-    void reset();
 };
 
 #endif

@@ -2,19 +2,20 @@
 #include "Config.h"
 #include <cmath>
 
-Ball::Ball() {
+Ball::Ball(float x, float y, bool startStuck) : stuck(startStuck), stuckOffsetX(0.0f) {
     shape.setRadius(BALL_RADIUS);
     shape.setFillColor(sf::Color::Cyan);
     shape.setOrigin(BALL_RADIUS, BALL_RADIUS);
-    reset();
-}
-
-void Ball::reset() {
-    shape.setPosition(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + 50.0f);
+    shape.setPosition(x, y);
     velocity = sf::Vector2f(BALL_START_SPEED, -BALL_START_SPEED);
 }
 
-void Ball::update(float deltaTime) {
+void Ball::update(float deltaTime, const sf::FloatRect& paddleBounds) {
+    if (stuck) {
+        shape.setPosition(paddleBounds.left + stuckOffsetX, paddleBounds.top - BALL_RADIUS);
+        return;
+    }
+
     shape.move(velocity * deltaTime);
 
     if (shape.getPosition().x - BALL_RADIUS < 0) {
@@ -25,10 +26,21 @@ void Ball::update(float deltaTime) {
         shape.setPosition(WINDOW_WIDTH - BALL_RADIUS, shape.getPosition().y);
         bounceX();
     }
-
     if (shape.getPosition().y - BALL_RADIUS < 0) {
         shape.setPosition(shape.getPosition().x, BALL_RADIUS);
         bounceY();
+    }
+}
+
+void Ball::stick(float paddleLeft) {
+    stuck = true;
+    stuckOffsetX = shape.getPosition().x - paddleLeft;
+}
+
+void Ball::launch() {
+    if (stuck) {
+        stuck = false;
+        velocity = sf::Vector2f(BALL_START_SPEED, -BALL_START_SPEED);
     }
 }
 
@@ -39,9 +51,8 @@ void Ball::draw(sf::RenderWindow& window) {
 void Ball::bounceX() { velocity.x = -velocity.x; }
 void Ball::bounceY() { velocity.y = -velocity.y; }
 
-void Ball::speedUp(float factor) {
-    velocity *= factor;
-}
+void Ball::multiplySpeed(float factor) { velocity *= factor; }
+void Ball::setVelocity(sf::Vector2f vel) { velocity = vel; }
 
 sf::FloatRect Ball::getBounds() const {
     return shape.getGlobalBounds();
