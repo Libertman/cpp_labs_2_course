@@ -22,6 +22,8 @@ public:
     virtual void onPaddleCollision(Paddle& paddle, Game& game) {}
     
     bool isDestroyed() const { return destroyed; }
+
+    virtual bool isBreakable() const { return false; }
 };
 
 #endif

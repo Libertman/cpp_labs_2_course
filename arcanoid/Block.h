@@ -18,7 +18,11 @@ public:
     }
     void draw(sf::RenderWindow& window) override { window.draw(shape); }
     sf::FloatRect getBounds() const override { return shape.getGlobalBounds(); }
-    void onBallCollision(Ball& ball, Game& game) override { ball.bounceY(); }
+    virtual bool isBreakable() const override { return true; }
+
+    void onBallCollision(Ball& ball, Game& game) override {
+        ball.resolveCollision(shape.getGlobalBounds());
+    }
 };
 
 class NormalBlock : public Block {
@@ -34,6 +38,7 @@ public:
 class IndestructibleBlock : public Block {
 public:
     IndestructibleBlock(float x, float y, float width) : Block(x, y, width, sf::Color(128, 128, 128)) {}
+    bool isBreakable() const override { return false; }
 };
 
 class SpeedUpBlock : public Block {

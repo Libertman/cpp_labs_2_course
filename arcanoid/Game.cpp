@@ -97,13 +97,12 @@ void Game::checkCollisions() {
     for (auto& ball : balls) {
         if (ball->isStuck()) continue;
 
-        // С Платформой
         if (ball->getBounds().intersects(paddleBounds)) {
             if (stickyModifierActive) {
                 ball->stick(paddleBounds.left);
                 stickyModifierActive = false;
             } else {
-                ball->bounceY();
+                ball->resolveCollision(paddleBounds);
             }
         }
 
@@ -162,6 +161,28 @@ void Game::checkCollisions() {
             elements.clear();
             initBlocks();
         }
+    }
+
+    bool breakableRemaining = false;
+    for (const auto& element : elements) {
+        if (element->isBreakable() && !element->isDestroyed()) {
+            breakableRemaining = true;
+            break;
+        }
+    }
+
+    if (!breakableRemaining) {
+        score += 500;
+        elements.clear();
+        
+        balls.clear();
+        balls.push_back(std::make_unique<Ball>(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT - 50.0f - BALL_RADIUS, true));
+        
+        stickyModifierActive = false;
+        safetyFloorActive = false;
+        paddle.reset();
+        
+        initBlocks();
     }
 }
 

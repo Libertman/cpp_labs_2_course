@@ -61,3 +61,28 @@ sf::FloatRect Ball::getBounds() const {
 sf::Vector2f Ball::getPosition() const {
     return shape.getPosition();
 }
+
+void Ball::resolveCollision(const sf::FloatRect& objectBounds) {
+    sf::FloatRect ballBounds = getBounds();
+    sf::FloatRect overlap;
+
+    if (ballBounds.intersects(objectBounds, overlap)) {
+        if (overlap.width < overlap.height) {
+            bounceX();
+            
+            if (shape.getPosition().x < objectBounds.left + objectBounds.width / 2.0f) {
+                shape.move(-overlap.width, 0);
+            } else {
+                shape.move(overlap.width, 0);
+            }
+        } else {
+            bounceY();
+            
+            if (shape.getPosition().y < objectBounds.top + objectBounds.height / 2.0f) {
+                shape.move(0, -overlap.height);
+            } else {
+                shape.move(0, overlap.height);
+            }
+        }
+    }
+}

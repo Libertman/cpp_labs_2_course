@@ -25,6 +25,8 @@ public:
     bool isStuck() const { return stuck; }
     void stick(float paddleLeft);
     void launch();
+
+    void resolveCollision(const sf::FloatRect& objectBounds);
     
     sf::FloatRect getBounds() const;
     sf::Vector2f getPosition() const;
